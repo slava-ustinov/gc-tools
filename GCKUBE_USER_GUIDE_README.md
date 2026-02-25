@@ -5,7 +5,7 @@
 
 ## Table of Contents
 1. [What is Gckube](#what-is-gckube)
-2. [Current Features (v1.1.0)](#current-features-v101)
+2. [Current Features (v1.1.1)](#current-features-v111)
 3. [Download](#download)
 4. [Installation](#installation)
 5. [How to Use](#how-to-use)
@@ -25,7 +25,7 @@ comprehensive information about Kubernetes cluster configurations and verify con
 
 ---
 
-## Current Features (v1.1.0)
+## Current Features (v1.1.1)
 
 ### Basic Cluster Information Collection
 - **Kubernetes Distribution**: Detects cluster type (e.g., GKE, EKS, on-premises)
@@ -50,7 +50,7 @@ supported only from Centra v53.3 and above
 
 Download the latest gckube binary release:
 
-**URL**: [gckube-linux-amd64-v1.1.0.tar.gz](https://github.com/slava-ustinov/gc-tools/blob/main/gckube-linux-amd64-v1.1.0.tar.gz)
+**URL**: [gckube-linux-amd64-v1.1.1.tar.gz](https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.1.1.tar.gz)
 
 ---
 
@@ -64,12 +64,12 @@ Download the latest gckube binary release:
 
 1. **Download the binary**
    ```bash
-   wget https://github.com/slava-ustinov/gc-tools/blob/main/gckube-linux-amd64-v1.1.0.tar.gz
+   wget https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.1.1.tar.gz
    ```
 
 2. **Extract to /usr/bin**
    ```bash
-   tar -xzvf gckube-linux-amd64-v1.1.0.tar.gz -C /usr/bin/
+   tar -xzvf gckube-linux-amd64-v1.1.1.tar.gz -C /usr/bin/
    ```
 
 3. **Verify installation**
@@ -195,7 +195,11 @@ This feature is supported only from Centra v53.3 and above.
 
 ## Version History
 
-### v1.1.0 (Current)
+## v1.1.1 (Current)
+- Bug fixes and improvements to advanced connectivity checks
+- Improved error handling and reporting for failed checks
+
+### v1.1.0
 - Cluster information collection
 - L5 connectivity check to aggregator
 - Orchestration to API server connectivity check (supported from Centra v53.3)
