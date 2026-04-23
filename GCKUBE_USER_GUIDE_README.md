@@ -5,7 +5,7 @@
 
 ## Table of Contents
 1. [What is Gckube](#what-is-gckube)
-2. [Current Features (v1.1.1)](#current-features-v111)
+2. [Current Features (v1.2.0)](#current-features-v120)
 3. [Download](#download)
 4. [Installation](#installation)
 5. [How to Use](#how-to-use)
@@ -25,7 +25,7 @@ comprehensive information about Kubernetes cluster configurations and verify con
 
 ---
 
-## Current Features (v1.1.1)
+## Current Features (v1.2.0)
 
 ### Basic Cluster Information Collection
 - **Kubernetes Distribution**: Detects cluster type (e.g., GKE, EKS, on-premises)
@@ -39,10 +39,9 @@ comprehensive information about Kubernetes cluster configurations and verify con
    - Creates a temporary Kubernetes job that attempts to connect to the aggregator endpoint
    - Reports success or failure of connectivity
 - **Orchestration to API Server Connectivity**: Verifies if Guardicore aggregator can reach the Kubernetes API server
-  - Requires an aggregator endpoint to be deployed that accepts API server details and attempts to connect. The endpoint is
-supported only from Centra v53.3 and above
-  - The api server flag/input should be leaved empty to skip this check
-  - Reports success or failure of connectivity
+  - **Note**: This feature requires a special aggregator endpoint that is currently not available - planned for future release
+  - When the endpoint becomes available (expected in Centra v53.4+), it will accept API server details and attempt to connect
+  - Currently, this check will be skipped with status "not_performed"
 
 ---
 
@@ -50,7 +49,7 @@ supported only from Centra v53.3 and above
 
 Download the latest gckube binary release:
 
-**URL**: [gckube-linux-amd64-v1.1.1.tar.gz](https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.1.1.tar.gz)
+**URL**: [gckube-linux-amd64-v1.2.0.tar.gz](https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.2.0.tar.gz)
 
 ---
 
@@ -64,12 +63,12 @@ Download the latest gckube binary release:
 
 1. **Download the binary**
    ```bash
-   wget https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.1.1.tar.gz
+   wget https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.2.0.tar.gz
    ```
 
 2. **Extract to /usr/bin**
    ```bash
-   tar -xzvf gckube-linux-amd64-v1.1.1.tar.gz -C /usr/bin/
+   tar -xzvf gckube-linux-amd64-v1.2.0.tar.gz -C /usr/bin/
    ```
 
 3. **Verify installation**
@@ -96,8 +95,6 @@ gckube \
   --cni-type calico \
   --aggregator-address 172.16.100.50 \
   --aggregator-port 443 \
-  --api-server-ip 10.0.0.1 \
-  --api-server-port 6443 \
   --ui-password "YourUIPassword"
 ```
 
@@ -108,8 +105,6 @@ gckube \
 | `--cni-type` | Container Network Interface type | `calico`, `ovn`, `azurecni`, `amazonvpc`, `cilium` | Yes |
 | `--aggregator-address` | Guardicore aggregator IP or FQDN | `172.16.100.50` or `aggr.example.com` | No* |
 | `--aggregator-port` | Guardicore aggregator port | `443` (default) | No |
-| `--api-server-ip` | Kubernetes API server IP | `10.0.0.1` | No* |
-| `--api-server-port` | Kubernetes API server port | `6443` (default) | No |
 | `--ui-password` | Guardicore UI password | `SecurePassword123` | No* |
 
 **Note**: * Only required if performing advanced connectivity checks.
@@ -135,8 +130,6 @@ gckube \
   --cni-type calico \
   --aggregator-address 172.16.100.50 \
   --aggregator-port 443 \
-  --api-server-ip 10.0.0.1 \
-  --api-server-port 6443 \
   --ui-password "MySecurePassword"
 ```
 
@@ -154,17 +147,19 @@ Please input aggregator port (default 443): 443
 ```bash
 gckube --cni-type cilium
 ```
-(To skip advanced connectivity checks, leave aggregator and API server information empty when prompted)
+(To skip advanced connectivity checks, leave aggregator information empty when prompted)
 
 ---
 
 ## Advanced Connectivity Checks
 
 ### Overview
-Advanced connectivity checks validate that cluster can connect to the aggregator (basic L5 connectivity), 
-and that the Guardicore aggregator can reach the Kubernetes cluster and API server. 
-To perform the check from the aggregator to api server, a special endpoint should be deployed on the aggregator. 
-This feature is supported only from Centra v53.3 and above. 
+Advanced connectivity checks validate that cluster can connect to the aggregator (basic L5 connectivity),
+and that the Guardicore aggregator can reach the Kubernetes cluster and API server.
+
+**Note**: The orchestration-to-API-server connectivity check requires a special aggregator endpoint that is
+**currently not available - planned for future release** (expected in Centra v53.4+). Until then, this check
+will be skipped with status "not_performed".
 
 ### What Gets Checked
 
@@ -173,12 +168,14 @@ This feature is supported only from Centra v53.3 and above.
 - **Method**: Attempts to reach a public aggregator endpoint
 - **Results**:
   - ✅ Success: Cluster can reach aggregator
-  - ❌ Failed: No network connectivity to aggregator/fairwall blocking access
+  - ❌ Failed: No network connectivity to aggregator/firewall blocking access
 
-#### 2. Orchestration to API Server Connectivity (supported from Centra v53.3)
-- **Purpose**: Verifies if the aggregator can reach the Kubernetes API server
-- **Method**: Aggregator attempts to connect to the API server using provided IP and port
-- **Results**:
+#### 2. Orchestration to API Server Connectivity (Planned for Future Release)
+- **Purpose**: Will verify if the aggregator can reach the Kubernetes API server
+- **Status**: Currently not available - requires aggregator endpoint support (planned for Centra v53.4+)
+- **Current Behavior**: Check is skipped with status "not_performed" and reasoning "Aggregator endpoint not available - planned for future release"
+- **Future Method**: Aggregator will attempt to connect to the API server using provided IP and port
+- **Expected Results** (when available):
   - ✅ Success (200 OK): Aggregator can reach API server
   - ❌ Failed (401): Cannot authenticate to aggregator from gckube
   - ❌ Failed (500): Aggregator cannot reach API server
@@ -188,21 +185,23 @@ This feature is supported only from Centra v53.3 and above.
 
 - **cluster information report blocks**: Basic cluster configuration details
 - **advanced_checks_report**: Results of connectivity validation tests
-  - Status values: `"succeeded"` or `"failed"`
+  - Status values: `"connected successfully"` or `"failed"`
   - Reasoning: Explanation if a check failed (empty if successful)
 
 ---
 
 ## Version History
 
-## v1.1.1 (Current)
+## v1.2.0 (Current)
+- Bug fixes and improvement
+
+### v1.1.1
 - Bug fixes and improvements to advanced connectivity checks
 - Improved error handling and reporting for failed checks
 
 ### v1.1.0
 - Cluster information collection
 - L5 connectivity check to aggregator
-- Orchestration to API server connectivity check (supported from Centra v53.3)
 - Command line arguments support
 - Interactive mode with user prompts
 
