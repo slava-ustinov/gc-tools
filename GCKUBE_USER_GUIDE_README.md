@@ -5,7 +5,7 @@
 
 ## Table of Contents
 1. [What is Gckube](#what-is-gckube)
-2. [Current Features (v1.2.0)](#current-features-v120)
+2. [Current Features (v1.3.0)](#current-features-v130)
 3. [Download](#download)
 4. [Installation](#installation)
 5. [How to Use](#how-to-use)
@@ -25,7 +25,7 @@ comprehensive information about Kubernetes cluster configurations and verify con
 
 ---
 
-## Current Features (v1.2.0)
+## Current Features (v1.3.0)
 
 ### Basic Cluster Information Collection
 - **Kubernetes Distribution**: Detects cluster type (e.g., GKE, EKS, on-premises)
@@ -47,33 +47,61 @@ comprehensive information about Kubernetes cluster configurations and verify con
 
 ## Download
 
-Download the latest gckube binary release:
+Download the latest gckube binary release for your architecture:
 
-**URL**: [gckube-linux-amd64-v1.2.0.tar.gz](https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.2.0.tar.gz)
+### Choose Your Architecture
+
+**AMD64 (Intel/AMD processors):**
+- Use this for most Linux systems with x86_64 processors
+- **URL**: [gckube-linux-amd64-v1.3.0.tar.gz](https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.3.0.tar.gz)
+
+**ARM64 (ARM-based processors):**
+- Use this if running on ARM-based machines (Apple Silicon, AWS Graviton, Raspberry Pi, etc.)
+- **URL**: [gckube-linux-arm64-v1.3.0.tar.gz](https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-arm64-v1.3.0.tar.gz)
+
+💡 **How to check your architecture:**
+```bash
+uname -m
+# Output: x86_64 → Use AMD64 binary
+# Output: aarch64 or arm64 → Use ARM64 binary
+```
 
 ---
 
 ## Installation
 
 ### Prerequisites
-- Linux machine with amd64 architecture
+- Linux machine (AMD64 or ARM64 architecture)
 - `kubectl` properly configured with access to the cluster and ability to create job in default namespace (for connectivity checks)
 
 ### Installation Steps
 
-1. **Download the binary**
+1. **Download the binary for your architecture**
+
+   **For AMD64 (x86_64):**
    ```bash
-   wget https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.2.0.tar.gz
+   wget https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.3.0.tar.gz
+   ```
+
+   **For ARM64 (aarch64):**
+   ```bash
+   wget https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-arm64-v1.3.0.tar.gz
    ```
 
 2. **Extract to /usr/bin**
    ```bash
-   tar -xzvf gckube-linux-amd64-v1.2.0.tar.gz -C /usr/bin/
+   # For AMD64:
+   tar -xzvf gckube-linux-amd64-v1.3.0.tar.gz -C /usr/bin/
+   
+   # For ARM64:
+   tar -xzvf gckube-linux-arm64-v1.3.0.tar.gz -C /usr/bin/
    ```
 
 3. **Verify installation**
    ```bash
    gckube --help
+   gckube -v
+   # Expected output: gckube version is v1.3.0
    ```
 
 ---
@@ -192,8 +220,13 @@ will be skipped with status "not_performed".
 
 ## Version History
 
-## v1.2.0 (Current)
-- Bug fixes and improvement
+## v1.3.0 (Current)
+- Multi-architecture support: Separate binaries for AMD64 and ARM64
+- Support for running cluster reports on ARM64 Kubernetes nodes
+
+### v1.2.0
+- Added -v flag for quick version check
+- Bug fixes and improvements
 
 ### v1.1.1
 - Bug fixes and improvements to advanced connectivity checks
