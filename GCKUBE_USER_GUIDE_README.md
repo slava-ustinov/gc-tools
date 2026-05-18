@@ -5,7 +5,7 @@
 
 ## Table of Contents
 1. [What is Gckube](#what-is-gckube)
-2. [Current Features (v1.3.0)](#current-features-v130)
+2. [Current Features (v1.3.1)](#current-features-v131)
 3. [Download](#download)
 4. [Installation](#installation)
 5. [How to Use](#how-to-use)
@@ -25,7 +25,7 @@ comprehensive information about Kubernetes cluster configurations and verify con
 
 ---
 
-## Current Features (v1.3.0)
+## Current Features (v1.3.1)
 
 ### Basic Cluster Information Collection
 - **Kubernetes Distribution**: Detects cluster type (e.g., GKE, EKS, on-premises)
@@ -53,11 +53,11 @@ Download the latest gckube binary release for your architecture:
 
 **AMD64 (Intel/AMD processors):**
 - Use this for most Linux systems with x86_64 processors
-- **URL**: [gckube-linux-amd64-v1.3.0.tar.gz](https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.3.0.tar.gz)
+- **URL**: [gckube-linux-amd64-v1.3.1.tar.gz](https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.3.1.tar.gz)
 
 **ARM64 (ARM-based processors):**
-- Use this if running on ARM-based machines (Apple Silicon, AWS Graviton, Raspberry Pi, etc.)
-- **URL**: [gckube-linux-arm64-v1.3.0.tar.gz](https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-arm64-v1.3.0.tar.gz)
+- Use this for Linux systems running on ARM64 processors (for example, AWS Graviton, Raspberry Pi, or a Linux VM/container on Apple Silicon)
+- **URL**: [gckube-linux-arm64-v1.3.1.tar.gz](https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-arm64-v1.3.1.tar.gz)
 
 💡 **How to check your architecture:**
 ```bash
@@ -80,28 +80,28 @@ uname -m
 
    **For AMD64 (x86_64):**
    ```bash
-   wget https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.3.0.tar.gz
+   wget https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.3.1.tar.gz
    ```
 
    **For ARM64 (aarch64):**
    ```bash
-   wget https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-arm64-v1.3.0.tar.gz
+   wget https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-arm64-v1.3.1.tar.gz
    ```
 
 2. **Extract to /usr/bin**
    ```bash
    # For AMD64:
-   tar -xzvf gckube-linux-amd64-v1.3.0.tar.gz -C /usr/bin/
+   tar -xzvf gckube-linux-amd64-v1.3.1.tar.gz -C /usr/bin/
    
    # For ARM64:
-   tar -xzvf gckube-linux-arm64-v1.3.0.tar.gz -C /usr/bin/
+   tar -xzvf gckube-linux-arm64-v1.3.1.tar.gz -C /usr/bin/
    ```
 
 3. **Verify installation**
    ```bash
    gckube --help
    gckube -v
-   # Expected output: gckube version is v1.3.0
+   # Expected output: gckube version is v1.3.1
    ```
 
 ---
@@ -122,8 +122,7 @@ You can provide all required information via command line arguments:
 gckube \
   --cni-type calico \
   --aggregator-address 172.16.100.50 \
-  --aggregator-port 443 \
-  --ui-password "YourUIPassword"
+  --aggregator-port 443
 ```
 
 ### Command Line Flags Reference
@@ -133,7 +132,6 @@ gckube \
 | `--cni-type` | Container Network Interface type | `calico`, `ovn`, `azurecni`, `amazonvpc`, `cilium` | Yes |
 | `--aggregator-address` | Guardicore aggregator IP or FQDN | `172.16.100.50` or `aggr.example.com` | No* |
 | `--aggregator-port` | Guardicore aggregator port | `443` (default) | No |
-| `--ui-password` | Guardicore UI password | `SecurePassword123` | No* |
 
 **Note**: * Only required if performing advanced connectivity checks.
 
@@ -157,8 +155,7 @@ Cluster Report:
 gckube \
   --cni-type calico \
   --aggregator-address 172.16.100.50 \
-  --aggregator-port 443 \
-  --ui-password "MySecurePassword"
+  --aggregator-port 443
 ```
 
 #### Example 3: Both commands line arguments and prompts (CNI via argument, prompts for aggregator)
@@ -220,7 +217,10 @@ will be skipped with status "not_performed".
 
 ## Version History
 
-## v1.3.0 (Current)
+## v1.3.1 (Current)
+- Removed unused flags
+
+### v1.3.0
 - Multi-architecture support: Separate binaries for AMD64 and ARM64
 - Support for running cluster reports on ARM64 Kubernetes nodes
 
