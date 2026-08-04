@@ -5,7 +5,7 @@
 
 ## Table of Contents
 1. [What is Gckube](#what-is-gckube)
-2. [Current Features (v1.3.1)](#current-features-v131)
+2. [Current Features (v1.4.0)](#current-features-v140)
 3. [Download](#download)
 4. [Installation](#installation)
 5. [How to Use](#how-to-use)
@@ -25,23 +25,29 @@ comprehensive information about Kubernetes cluster configurations and verify con
 
 ---
 
-## Current Features (v1.3.1)
+## Current Features (v1.4.0)
 
 ### Basic Cluster Information Collection
-- **Kubernetes Distribution**: Detects cluster type (e.g., GKE, EKS, on-premises)
-- **CNI Plugin**: Identifies installed CNI version and additional CNI specific information (for example, if Calico api server installed) 
-- **Node Information**: Collects details about cluster nodes
+- **Kubernetes Distribution**: Detects cluster type (e.g., GKE, EKS, AKS, OCP, RKE, RKE2, k3s, on-premises), including EKS auto-mode detection
+- **CNI Plugin**: Identifies the installed CNI type (auto-detected when possible) and version, plus CNI-specific information (e.g., Calico API server availability, Cilium `monitor-aggregation` log-aggregation config on Cilium 1.19+)
+- **Node Information**: Collects details about cluster nodes, including any node taints
 - **Kubernetes Version**: Gathers API server version
 - **Ram information on nodes**: Collects RAM information on cluster nodes
+- **Istio**: Detects whether Istio is installed, its version, mTLS mode, and sidecar-injected namespaces
 
-### Advanced Connectivity Checks (Optional)
+### Advanced Connectivity & Pre-Install Checks (Optional)
 - **L5 Connectivity Check**: Validates network layer connectivity to Guardicore aggregator if aggregator address is provided
    - Creates a temporary Kubernetes job that attempts to connect to the aggregator endpoint
    - Reports success or failure of connectivity
+- **HostPath Admission Check**: Verifies the cluster's admission policy allows the agent's required hostPath mounts (`/proc`, `/lib/modules`, `/sys`), reporting `allowed`/`blocked`/`unknown`
+- **Custom Namespace**: The pre-install check Job can run in a user-specified namespace via `--namespace`, instead of the `default` namespace
 - **Orchestration to API Server Connectivity**: Verifies if Guardicore aggregator can reach the Kubernetes API server
   - **Note**: This feature requires a special aggregator endpoint that is currently not available - planned for future release
   - When the endpoint becomes available (expected in Centra v53.4+), it will accept API server details and attempt to connect
   - Currently, this check will be skipped with status "not_performed"
+
+### Output
+- **Colorized output**: Use `--color` to colorize the JSON printed to stdout (keys bold, strings yellow, booleans green/red, numbers cyan)
 
 ---
 
@@ -53,11 +59,11 @@ Download the latest gckube binary release for your architecture:
 
 **AMD64 (Intel/AMD processors):**
 - Use this for most Linux systems with x86_64 processors
-- **URL**: [gckube-linux-amd64-v1.3.1.tar.gz](https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.3.1.tar.gz)
+- **URL**: [gckube-linux-amd64-v1.4.0.tar.gz](https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.4.0.tar.gz)
 
 **ARM64 (ARM-based processors):**
 - Use this for Linux systems running on ARM64 processors (for example, AWS Graviton, Raspberry Pi, or a Linux VM/container on Apple Silicon)
-- **URL**: [gckube-linux-arm64-v1.3.1.tar.gz](https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-arm64-v1.3.1.tar.gz)
+- **URL**: [gckube-linux-arm64-v1.4.0.tar.gz](https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-arm64-v1.4.0.tar.gz)
 
 💡 **How to check your architecture:**
 ```bash
@@ -80,28 +86,28 @@ uname -m
 
    **For AMD64 (x86_64):**
    ```bash
-   wget https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.3.1.tar.gz
+   wget https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-amd64-v1.4.0.tar.gz
    ```
 
    **For ARM64 (aarch64):**
    ```bash
-   wget https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-arm64-v1.3.1.tar.gz
+   wget https://raw.githubusercontent.com/slava-ustinov/gc-tools/main/gckube-linux-arm64-v1.4.0.tar.gz
    ```
 
 2. **Extract to /usr/bin**
    ```bash
    # For AMD64:
-   tar -xzvf gckube-linux-amd64-v1.3.1.tar.gz -C /usr/bin/
+   tar -xzvf gckube-linux-amd64-v1.4.0.tar.gz -C /usr/bin/
    
    # For ARM64:
-   tar -xzvf gckube-linux-arm64-v1.3.1.tar.gz -C /usr/bin/
+   tar -xzvf gckube-linux-arm64-v1.4.0.tar.gz -C /usr/bin/
    ```
 
 3. **Verify installation**
    ```bash
    gckube --help
    gckube -v
-   # Expected output: gckube version is v1.3.1
+   # Expected output: gckube version is v1.4.0
    ```
 
 ---
@@ -120,20 +126,24 @@ You can provide all required information via command line arguments:
 
 ```bash
 gckube \
-  --cni-type calico \
-  --aggregator-address 172.16.100.50 \
-  --aggregator-port 443
+  --cni calico \
+  --agg-add 172.16.100.50 \
+  --agg-port 443
 ```
 
 ### Command Line Flags Reference
 
-| Flag | Description | Example | Required |
-|------|-------------|---------|----------|
-| `--cni-type` | Container Network Interface type | `calico`, `ovn`, `azurecni`, `amazonvpc`, `cilium` | Yes |
-| `--aggregator-address` | Guardicore aggregator IP or FQDN | `172.16.100.50` or `aggr.example.com` | No* |
-| `--aggregator-port` | Guardicore aggregator port | `443` (default) | No |
+| Flag | Short | Description | Example | Required |
+|------|-------|-------------|---------|----------|
+| `--cni` | `-c` | Container Network Interface type | `calico`, `ovn`, `azurecni`, `amazonvpc`, `cilium` | No* |
+| `--agg-add` | `-a` | Guardicore aggregator IP or FQDN | `172.16.100.50` or `aggr.example.com` | No** |
+| `--agg-port` | `-p` | Guardicore aggregator port | `443` (default) | No |
+| `--namespace` | `-n` | Namespace for the pre-install check Job | `guardicore` (defaults to `default`) | No |
+| `--color` | | Colorize the JSON output printed to stdout | | No |
+| `--version` | `-v` | Print gckube version and exit | | No |
 
-**Note**: * Only required if performing advanced connectivity checks.
+**Note**: * If omitted, gckube attempts to auto-detect the CNI, then falls back to an interactive prompt.
+**Note**: ** Only required if performing advanced connectivity checks.
 
 ### Usage Examples
 
@@ -153,14 +163,14 @@ Cluster Report:
 #### Example 2: Full Report with Connectivity Checks, using Command Line Arguments
 ```bash
 gckube \
-  --cni-type calico \
-  --aggregator-address 172.16.100.50 \
-  --aggregator-port 443
+  --cni calico \
+  --agg-add 172.16.100.50 \
+  --agg-port 443
 ```
 
 #### Example 3: Both commands line arguments and prompts (CNI via argument, prompts for aggregator)
 ```bash
-gckube --cni-type ovn
+gckube --cni ovn
 ```
 Then when prompted:
 ```
@@ -170,7 +180,7 @@ Please input aggregator port (default 443): 443
 
 #### Example 4: Skip Advanced Checks
 ```bash
-gckube --cni-type cilium
+gckube --cni cilium
 ```
 (To skip advanced connectivity checks, leave aggregator information empty when prompted)
 
@@ -217,7 +227,17 @@ will be skipped with status "not_performed".
 
 ## Version History
 
-## v1.3.1 (Current)
+## v1.4.0 (Current)
+- Added Istio check: detects installation, version, mTLS mode, and sidecar-injected namespaces
+- Added CNI auto-detection (no longer requires `--cni` or an interactive prompt when detectable)
+- Added node taints report and EKS auto-mode detection
+- Added `--namespace` flag to run the pre-install check Job in a user-specified namespace
+- Added hostPath admission check (`/proc`, `/lib/modules`, `/sys`) to the pre-install check Job
+- Added Cilium `monitor-aggregation` log-aggregation config check (required `none` on Cilium 1.19+)
+- Added `--color` flag to colorize JSON output
+- Fixed OpenShift (OCP) distribution detection
+
+### v1.3.1
 - Removed unused flags
 
 ### v1.3.0
